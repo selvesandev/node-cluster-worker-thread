@@ -10,6 +10,12 @@ const sequelize = new Sequelize('cluster_playground', 'postgres', '', {
     host: 'localhost',
     dialect: 'postgres',
     logging: false, // Set to true to see SQL queries
+    pool: {
+        max: 10, // Maximum number of connections in pool
+        min: 0,  // Minimum number of connections in pool
+        acquire: 30000, // Maximum time (ms) that pool will try to get connection before throwing error
+        idle: 10000 // Maximum time (ms) that a connection can be idle before being released
+    }
 });
 
 if (cluster.isMaster) {
@@ -113,6 +119,10 @@ if (cluster.isMaster) {
         router.get('/g', (req, res) => {
             console.log(`Hello from Worker ${process.pid}`);
             res.send(`Hello from Worker ${process.pid}`);
+        });
+
+        router.get('/health', (req, res) => {
+            res.status(200).json({ status: 'ok', pid: process.pid });
         });
 
         router.get('/occupy-thread', (req, res) => {
